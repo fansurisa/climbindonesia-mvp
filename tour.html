@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tour — Climb Indonesia</title>
+<meta name="description" content="Tour details and direct WhatsApp booking for Climb Indonesia adventures.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap nav">
+    <a class="brand" href="index.html"><span class="logo">▲</span> Climb Indonesia</a>
+    <nav class="nav-links" id="navlinks">
+      <a href="index.html">Home</a>
+      <a href="explorer.html">Explorer</a>
+      <a href="index.html#testimonials">Reviews</a>
+      <a href="index.html#video">Films</a>
+      <a class="btn btn-primary nav-cta" href="https://wa.me/6281219592895">WhatsApp</a>
+    </nav>
+    <button class="menu-toggle" id="mtoggle" aria-label="Menu">☰</button>
+  </div>
+</header>
+
+<main id="app">
+  <div class="wrap breadcrumb"><a href="explorer.html">← All tours</a></div>
+  <div id="detail"></div>
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <div>© <span id="yr"></span> Climb Indonesia — Adventure tours across the archipelago.</div>
+    <div class="social">
+      <a href="https://wa.me/6281219592895">WhatsApp</a>
+      <a href="index.html">Home</a>
+      <a href="explorer.html">Explorer</a>
+    </div>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script>
+(function(){
+  const T = window.CI_TOURS || [];
+  const WA = "6281219592895";
+  const decode = s => (s||'').replace(/&#8211;|&ndash;/g,'–').replace(/&amp;/g,'&').replace(/&#8217;|&rsquo;/g,'\'').replace(/&[a-z]+;/g,'');
+  const params = new URLSearchParams(location.search);
+  const slug = params.get('slug');
+  const t = T.find(x=>x.slug===slug);
+
+  document.getElementById('yr').textContent=new Date().getFullYear();
+
+  if(!t){
+    document.getElementById('detail').innerHTML =
+      '<div class="empty">Tour not found. <a href="explorer.html" style="color:var(--blue-600)">Back to explorer</a></div>';
+    return;
+  }
+
+  const title = decode(t.title);
+  const dest  = t.destinations.join(', ') || 'Indonesia';
+  const dur   = t.duration ? t.duration+' days' : 'Duration varies';
+  const diff  = t.difficulty || 'All levels';
+  const act   = t.activities.join(', ');
+  const waMsg = encodeURIComponent(`Hi! I'm interested in the "${title}" tour (${dest}). Can you share availability and pricing?`);
+  const waUrl = `https://wa.me/${WA}?text=${waMsg}`;
+  const img   = t.img || '';
+
+  // hero image with fallback
+  const heroImg = img
+    ? `<img class="detail-hero-img" src="${img}" alt="${title}" onerror="this.style.display='none'">`
+    : '';
+
+  const tags = t.activities.map(a=>`<span class="tag">${decode(a)}</span>`).join('');
+
+  document.getElementById('detail').innerHTML = `
+    <section class="detail-hero">
+      ${heroImg}
+      <div class="wrap detail-hero-inner">
+        <span class="eyebrow" style="color:#7fb6ff">${dest}</span>
+        <h1>${title}</h1>
+        <div class="detail-meta">
+          <span class="meta-pill">📍 ${dest}</span>
+          <span class="meta-pill">⏱ ${dur}</span>
+          <span class="meta-pill">🔥 ${diff}</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="wrap detail-body">
+      <div class="detail-layout">
+        <div class="detail-main">
+          <div class="breadcrumb" style="padding:0 0 8px"><a href="explorer.html">All tours</a> / ${title}</div>
+          <h3>Overview</h3>
+          <p style="color:var(--muted);max-width:60ch">${title} is one of ${dest}'s signature adventures, operated by Climb Indonesia's certified local guides. This ${diff.toLowerCase()} expedition blends ${decode(act).toLowerCase()} across some of the country's most dramatic terrain.</p>
+          <h3>What's included</h3>
+          <ul style="color:var(--muted);padding-left:20px;line-height:1.9;max-width:60ch">
+            <li>Licensed, English-speaking mountain guides</li>
+            <li>Permits &amp; National Park fees</li>
+            <li>Camping equipment &amp; meals on multi-day trips</li>
+            <li>Door-to-trail logistics within ${dest}</li>
+          </ul>
+          <h3>Activities</h3>
+          <div class="detail-tags">${tags}</div>
+          <h3>Ready to climb?</h3>
+          <p style="color:var(--muted);max-width:60ch">Message our team on WhatsApp for live availability, group rates and custom dates. No payment needed to enquire.</p>
+          <a class="btn btn-primary" href="${waUrl}">📱 Book via WhatsApp</a>
+        </div>
+
+        <aside class="aside">
+          <h4>Trip summary</h4>
+          <div class="row"><span>Destination</span><b>${dest}</b></div>
+          <div class="row"><span>Duration</span><b>${dur}</b></div>
+          <div class="row"><span>Difficulty</span><b>${diff}</b></div>
+          <div class="row"><span>Min. age</span><b>${t.age[0]||'All'}</b></div>
+          <a class="btn btn-primary wa" href="${waUrl}">📱 Book via WhatsApp</a>
+          <a class="btn btn-ghost wa" style="margin-top:10px" href="index.html#contact">Contact form</a>
+        </aside>
+      </div>
+    </div>`;
+
+  // JSON-LD TouristTrip schema
+  const schema = {
+    "@context":"https://schema.org",
+    "@type":"TouristTrip",
+    "name":title,
+    "description":`${title} — a ${diff.toLowerCase()} adventure in ${dest} by Climb Indonesia.`,
+    "touristType":diff,
+    "provider":{"@type":"Organization","name":"Climb Indonesia","url":"https://climbindonesia.com"},
+    "subjectOf":{"@type":"Place","name":dest}
+  };
+  if(img) schema.image = img;
+  const s=document.createElement('script'); s.type='application/ld+json';
+  s.textContent=JSON.stringify(schema); document.head.appendChild(s);
+
+  // meta description + title
+  document.title = title + " — Climb Indonesia";
+  const m=document.querySelector('meta[name=description]'); if(m) m.setAttribute('content',`${title} — ${diff} adventure in ${dest}. Book via WhatsApp with Climb Indonesia.`);
+})();
+</script>
+</body>
+</html>

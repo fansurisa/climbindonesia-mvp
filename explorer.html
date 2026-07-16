@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tour Explorer — Climb Indonesia</title>
+<meta name="description" content="Explore 38 climbing, trekking and adventure tours across Indonesia. Filter by destination, activity and experience level. Book via WhatsApp.">
+<meta property="og:title" content="Tour Explorer — Climb Indonesia">
+<meta property="og:description" content="38 curated climbing & adventure tours across Indonesia.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap nav">
+    <a class="brand" href="index.html"><span class="logo">▲</span> Climb Indonesia</a>
+    <nav class="nav-links" id="navlinks">
+      <a href="index.html">Home</a>
+      <a href="explorer.html">Explorer</a>
+      <a href="index.html#testimonials">Reviews</a>
+      <a href="index.html#video">Films</a>
+      <a class="btn btn-primary nav-cta" href="https://wa.me/6281219592895">WhatsApp</a>
+    </nav>
+    <button class="menu-toggle" id="mtoggle" aria-label="Menu">☰</button>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap hero-inner">
+    <span class="eyebrow" style="color:#7fb6ff">38 Adventures · 14 Destinations</span>
+    <h1>Find your next summit across Indonesia.</h1>
+    <p>Browse every climbing, trekking and volcano expedition we run — from Rinjani to Carstensz Pyramid. Filter by where you want to go and how hard you want to push.</p>
+    <div class="hero-cta">
+      <a class="btn btn-primary" href="#explorer">Explore Adventures →</a>
+      <a class="btn btn-ghost" href="https://wa.me/6281219592895">Talk to a guide</a>
+    </div>
+    <div class="hero-stats">
+      <div><b>38</b> Curated tours</div>
+      <div><b>14</b> Island destinations</div>
+      <div><b>10+</b> Min. age welcome</div>
+    </div>
+  </div>
+</section>
+
+<main class="section" id="explorer">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Tour Explorer</span>
+      <h2>All 38 tours</h2>
+      <p>Filter by destination, activity and experience level. Tap any card for the full itinerary and a direct WhatsApp booking link.</p>
+    </div>
+
+    <div class="filters">
+      <div class="grp">
+        <label>Destination</label>
+        <div id="f-dest" class="grp"></div>
+      </div>
+      <div class="grp">
+        <label>Activity</label>
+        <div id="f-act" class="grp"></div>
+      </div>
+      <div class="grp">
+        <label>Level</label>
+        <div id="f-lvl" class="grp"></div>
+      </div>
+      <input class="search" id="search" type="search" placeholder="Search tours…" aria-label="Search tours">
+    </div>
+
+    <div class="result-count" id="count"></div>
+    <div class="grid" id="grid"></div>
+    <div class="empty" id="empty" style="display:none">No tours match those filters. <a href="explorer.html" style="color:var(--blue-600)">Reset</a></div>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <div>© <span id="yr"></span> Climb Indonesia — Adventure tours across the archipelago.</div>
+    <div class="social">
+      <a href="https://wa.me/6281219592895">WhatsApp</a>
+      <a href="index.html">Home</a>
+      <a href="explorer.html">Explorer</a>
+    </div>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script>
+(function(){
+  const T = window.CI_TOURS || [];
+  const grid = document.getElementById('grid');
+  const countEl = document.getElementById('count');
+  const emptyEl = document.getElementById('empty');
+  const state = { dest:'', act:'', lvl:'', q:'' };
+
+  const decode = s => (s||'').replace(/&#8211;|&ndash;/g,'–').replace(/&amp;/g,'&').replace(/&#8217;|&rsquo;/g,'\'').replace(/&[a-z]+;/g,'');
+
+  // build filter options
+  const uniq = (arr) => [...new Set(arr)].filter(Boolean).sort();
+  const dests = uniq(T.flatMap(t=>t.destinations));
+  const acts  = uniq(T.flatMap(t=>t.activities));
+  const lvls  = ['Easy','Moderate','Challenging','Hard'];
+
+  function chip(container, label, value, group){
+    const b=document.createElement('button');
+    b.className='chip'+(state[group]===value?' active':'');
+    b.textContent=label;
+    b.onclick=()=>{ state[group] = state[group]===value ? '' : value; render(); };
+    container.appendChild(b);
+  }
+  dests.forEach(d=>chip(document.getElementById('f-dest'),d,d,'dest'));
+  acts.forEach(a=>chip(document.getElementById('f-act'),a,a,'act'));
+  lvls.forEach(l=>chip(document.getElementById('f-lvl'),l,l,'lvl'));
+
+  document.getElementById('search').addEventListener('input',e=>{ state.q=e.target.value.toLowerCase().trim(); render(); });
+  document.getElementById('yr').textContent=new Date().getFullYear();
+
+  function cardHTML(t){
+    const title=decode(t.title);
+    const dest = t.destinations[0] || 'Indonesia';
+    const dur  = t.duration ? t.duration+'D' : 'Varies';
+    const diff = t.difficulty||'All levels';
+    const img  = t.img
+      ? `<img data-src="${t.img}" alt="${title}" loading="lazy" onload="this.classList.add('loaded')" onerror="this.closest('.card-img').classList.add('img-fallback')">`
+      : '';
+    const tags = t.activities.slice(0,3).map(a=>`<span class="tag">${decode(a)}</span>`).join('');
+    return `<a class="card" href="tour.html?slug=${encodeURIComponent(t.slug)}">
+      <div class="card-img"><span class="card-badge">${diff}</span>${img}</div>
+      <div class="card-body">
+        <div class="card-title">${title}</div>
+        <div class="card-meta">
+          <span>📍 ${dest}</span>
+          <span>⏱ ${dur}</span>
+          <span>🔥 ${diff}</span>
+        </div>
+        <div class="card-tags">${tags}</div>
+        <span class="card-cta">View tour →</span>
+      </div></a>`;
+  }
+
+  function render(){
+    let list = T.filter(t=>{
+      if(state.dest && !t.destinations.includes(state.dest)) return false;
+      if(state.act  && !t.activities.includes(state.act))   return false;
+      if(state.lvl  && t.difficulty!==state.lvl)             return false;
+      if(state.q){
+        const hay=(t.title+' '+t.destinations.join(' ')+' '+t.activities.join(' ')).toLowerCase();
+        if(!hay.includes(state.q)) return false;
+      }
+      return true;
+    });
+    grid.innerHTML = list.map(cardHTML).join('');
+    countEl.textContent = `Showing ${list.length} of ${T.length} tours`;
+    emptyEl.style.display = list.length? 'none':'block';
+    // refresh active chip styles
+    document.querySelectorAll('.chip').forEach(c=>{
+      const g = c.closest('.grp').id;
+      const map={'f-dest':'dest','f-act':'act','f-lvl':'lvl'};
+      const group=map[g];
+      c.classList.toggle('active', state[group]!=='' && c.textContent===state[group]);
+    });
+    // lazy load
+    grid.querySelectorAll('img[data-src]').forEach(img=>{
+      img.src=img.dataset.src; img.removeAttribute('data-src');
+    });
+  }
+
+  // mobile menu
+  const mt=document.getElementById('mtoggle'), nl=document.getElementById('navlinks');
+  mt.onclick=()=>nl.classList.toggle('open');
+
+  render();
+})();
+</script>
+</body>
+</html>
