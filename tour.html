@@ -47,98 +47,58 @@
 (function(){
   const T = window.CI_TOURS || [];
   const WA = "6281219592895";
-  const decode = s => (s||'').replace(/&#8211;|&ndash;/g,'–').replace(/&amp;/g,'&').replace(/&#8217;|&rsquo;/g,'\'').replace(/&[a-z]+;/g,'');
+  const BASE = 'https://fansurisa.github.io/climbindonesia-mvp/';
+  const detail = document.getElementById('detail');
+  const decode = s => (s||'').replace(/&#8211;|&ndash;/g,'-').replace(/&amp;/g,'&').replace(/&#8217;|&rsquo;/g,"'").replace(/&[a-z]+;/g,'');
   const params = new URLSearchParams(location.search);
   const slug = params.get('slug');
-  const t = T.find(x=>x.slug===slug);
-
+  const t = T.find(x=>x.slug===slug || String(x.id)===slug);
   document.getElementById('yr').textContent=new Date().getFullYear();
+  detail.innerHTML = '<div class="wrap loading-state"><div class="spinner"></div><b>Preparing your route...</b></div>';
 
+  const setMeta=(attr, key, val)=>{ let m=document.querySelector(`meta[${attr}="${key}"]`); if(!m){m=document.createElement('meta');m.setAttribute(attr,key);document.head.appendChild(m);} m.setAttribute('content',val); };
+
+  setTimeout(()=>{
   if(!t){
-    document.getElementById('detail').innerHTML =
-      '<div class="empty">Tour not found. <a href="explorer.html" style="color:var(--blue-600)">Back to explorer</a></div>';
+    document.title = 'Tour not found - Climb Indonesia';
+    detail.innerHTML = '<section class="wrap not-found"><h1>Tour not found</h1><p>This route may have moved. Explore all adventures or message us and we will point you to the right climb.</p><a class="btn btn-primary" href="explorer.html">Back to explorer</a> <a class="btn btn-ghost" href="https://wa.me/'+WA+'">Ask on WhatsApp</a></section>';
     return;
   }
 
   const title = decode(t.title);
-  const dest  = t.destinations.join(', ') || 'Indonesia';
-  const dur   = t.duration ? t.duration+' days' : 'Duration varies';
+  const dest  = (t.destinations||[]).join(', ') || 'Indonesia';
+  const dur   = t.duration ? t.duration+' days' : 'Custom duration';
   const diff  = t.difficulty || 'All levels';
-  const act   = t.activities.join(', ');
+  const act   = (t.activities||[]).join(', ');
+  const price = t.price_range || 'Price on enquiry';
   const waMsg = encodeURIComponent(`Hi! I'm interested in the "${title}" tour (${dest}). Can you share availability and pricing?`);
   const waUrl = `https://wa.me/${WA}?text=${waMsg}`;
-  const img   = t.img || '';
+  const image = Array.isArray(t.img) ? t.img : [t.img, 1400, 900, false];
+  const imgUrl = image[0] || '';
+  const thumb = imgUrl;
+  const pageUrl = `${BASE}tour.html?slug=${encodeURIComponent(t.slug)}`;
 
-  // hero image with fallback
-  const heroImg = img
-    ? `<img class="detail-hero-img" src="${img}" alt="${title}" onerror="this.style.display='none'">`
-    : '';
+  document.title = title + ' - Climb Indonesia';
+  setMeta('name','description',`${title} - ${diff} adventure in ${dest}. ${price}. Book via WhatsApp with Climb Indonesia.`);
+  setMeta('property','og:title',`${title} - Climb Indonesia`); setMeta('property','og:description',`${price} for a ${diff.toLowerCase()} adventure in ${dest}.`);
+  setMeta('property','og:type','website'); setMeta('property','og:url',pageUrl); if(imgUrl) setMeta('property','og:image',imgUrl);
+  setMeta('name','twitter:card','summary_large_image'); setMeta('name','twitter:title',`${title} - Climb Indonesia`); if(imgUrl) setMeta('name','twitter:image',imgUrl);
 
-  const tags = t.activities.map(a=>`<span class="tag">${decode(a)}</span>`).join('');
+  const heroImg = imgUrl ? `<img class="detail-hero-img" src="${thumb}" srcset="${thumb} 1536w, ${imgUrl} 2560w" sizes="100vw" width="${image[1]||1400}" height="${image[2]||900}" loading="eager" alt="${title}" onerror="this.closest('.detail-hero').classList.add('img-fallback');this.remove()">` : '';
+  const tags = (t.activities||[]).map(a=>`<span class="tag">${decode(a)}</span>`).join('');
+  const itinerary = (t.itinerary||[]).map(d=>`<article class="day-card"><div class="day-dot">${d.day}</div><div><h4>Day ${d.day}: ${d.title}</h4><p>${d.description}</p><div class="day-facts"><span>Route: ${(d.activities||[]).join(' / ')}</span><span>Meals: ${d.meals||'TBC'}</span><span>Stay: ${d.accommodation||'TBC'}</span></div></div></article>`).join('');
+  const related = T.filter(x=>x.slug!==t.slug).map(x=>{let score=0; if((x.destinations||[]).some(d=>(t.destinations||[]).includes(d))) score+=4; if((x.activities||[]).some(a=>(t.activities||[]).includes(a))) score+=2; if(x.difficulty===t.difficulty) score++; return {x,score};}).sort((a,b)=>b.score-a.score || decode(a.x.title).localeCompare(decode(b.x.title))).slice(0,4).map(({x})=>miniCard(x)).join('');
 
-  document.getElementById('detail').innerHTML = `
-    <section class="detail-hero">
-      ${heroImg}
-      <div class="wrap detail-hero-inner">
-        <span class="eyebrow" style="color:#7fb6ff">${dest}</span>
-        <h1>${title}</h1>
-        <div class="detail-meta">
-          <span class="meta-pill">📍 ${dest}</span>
-          <span class="meta-pill">⏱ ${dur}</span>
-          <span class="meta-pill">🔥 ${diff}</span>
-        </div>
-      </div>
-    </section>
+  detail.innerHTML = `
+    <section class="detail-hero">${heroImg}<div class="wrap detail-hero-inner"><span class="eyebrow" style="color:#7fb6ff">${dest}</span><h1>${title}</h1><div class="hero-price">${price}</div><div class="detail-meta"><span class="meta-pill">📍 ${dest}</span><span class="meta-pill">⏱ ${dur}</span><span class="meta-pill">🔥 ${diff}</span></div></div></section>
+    <div class="wrap detail-body"><div class="detail-layout"><div class="detail-main"><div class="breadcrumb" style="padding:0 0 8px"><a href="explorer.html">All tours</a> / ${title}</div><h3>Overview</h3><p style="color:var(--muted);max-width:60ch">${title} is a ${diff.toLowerCase()} Climb Indonesia adventure in ${dest}, shaped around certified local guiding, flexible pacing, and direct WhatsApp planning.</p><h3>Day-by-day itinerary</h3><div class="itinerary">${itinerary}</div><h3>What's included</h3><ul style="color:var(--muted);padding-left:20px;line-height:1.9;max-width:60ch"><li>Licensed, English-speaking mountain guides</li><li>Permits and National Park fees</li><li>Camping equipment and meals on multi-day trips</li><li>Door-to-trail logistics within ${dest}</li></ul><h3>Activities</h3><div class="detail-tags">${tags}</div><h3>Share this tour</h3><button class="btn btn-ghost" id="shareBtn">Copy link</button> <a class="btn btn-primary" href="https://wa.me/?text=${encodeURIComponent(title+' '+pageUrl)}">Share on WhatsApp</a></div><aside class="aside"><h4>Trip summary</h4><div class="price-panel"><span>${price}</span><small>No payment needed to enquire</small></div><div class="row"><span>Destination</span><b>${dest}</b></div><div class="row"><span>Duration</span><b>${dur}</b></div><div class="row"><span>Difficulty</span><b>${diff}</b></div><div class="row"><span>Min. age</span><b>${(t.age||[])[0]||'All'}</b></div><a class="btn btn-primary wa" href="${waUrl}">📱 Enquire on WhatsApp</a><a class="btn btn-ghost wa" style="margin-top:10px" href="index.html#contact">Contact form</a></aside></div><section class="related"><div class="section-head"><span class="eyebrow">Keep exploring</span><h2>Related tours</h2></div><div class="grid">${related}</div></section></div>`;
+  document.getElementById('shareBtn').onclick=()=>navigator.clipboard.writeText(pageUrl).then(()=>{document.getElementById('shareBtn').textContent='Link copied';});
 
-    <div class="wrap detail-body">
-      <div class="detail-layout">
-        <div class="detail-main">
-          <div class="breadcrumb" style="padding:0 0 8px"><a href="explorer.html">All tours</a> / ${title}</div>
-          <h3>Overview</h3>
-          <p style="color:var(--muted);max-width:60ch">${title} is one of ${dest}'s signature adventures, operated by Climb Indonesia's certified local guides. This ${diff.toLowerCase()} expedition blends ${decode(act).toLowerCase()} across some of the country's most dramatic terrain.</p>
-          <h3>What's included</h3>
-          <ul style="color:var(--muted);padding-left:20px;line-height:1.9;max-width:60ch">
-            <li>Licensed, English-speaking mountain guides</li>
-            <li>Permits &amp; National Park fees</li>
-            <li>Camping equipment &amp; meals on multi-day trips</li>
-            <li>Door-to-trail logistics within ${dest}</li>
-          </ul>
-          <h3>Activities</h3>
-          <div class="detail-tags">${tags}</div>
-          <h3>Ready to climb?</h3>
-          <p style="color:var(--muted);max-width:60ch">Message our team on WhatsApp for live availability, group rates and custom dates. No payment needed to enquire.</p>
-          <a class="btn btn-primary" href="${waUrl}">📱 Book via WhatsApp</a>
-        </div>
+  const schema={"@context":"https://schema.org","@type":"TouristTrip","name":title,"description":`${title} - ${diff.toLowerCase()} adventure in ${dest}. ${price}.`,"touristType":diff,"provider":{"@type":"Organization","name":"Climb Indonesia","url":"https://climbindonesia.com"},"subjectOf":{"@type":"Place","name":dest},"offers":{"@type":"Offer","priceCurrency":price.includes('USD')?'USD':'IDR',"description":price}}; if(imgUrl) schema.image=imgUrl;
+  const sc=document.createElement('script'); sc.type='application/ld+json'; sc.textContent=JSON.stringify(schema); document.head.appendChild(sc);
+  }, 120);
 
-        <aside class="aside">
-          <h4>Trip summary</h4>
-          <div class="row"><span>Destination</span><b>${dest}</b></div>
-          <div class="row"><span>Duration</span><b>${dur}</b></div>
-          <div class="row"><span>Difficulty</span><b>${diff}</b></div>
-          <div class="row"><span>Min. age</span><b>${t.age[0]||'All'}</b></div>
-          <a class="btn btn-primary wa" href="${waUrl}">📱 Book via WhatsApp</a>
-          <a class="btn btn-ghost wa" style="margin-top:10px" href="index.html#contact">Contact form</a>
-        </aside>
-      </div>
-    </div>`;
-
-  // JSON-LD TouristTrip schema
-  const schema = {
-    "@context":"https://schema.org",
-    "@type":"TouristTrip",
-    "name":title,
-    "description":`${title} — a ${diff.toLowerCase()} adventure in ${dest} by Climb Indonesia.`,
-    "touristType":diff,
-    "provider":{"@type":"Organization","name":"Climb Indonesia","url":"https://climbindonesia.com"},
-    "subjectOf":{"@type":"Place","name":dest}
-  };
-  if(img) schema.image = img;
-  const s=document.createElement('script'); s.type='application/ld+json';
-  s.textContent=JSON.stringify(schema); document.head.appendChild(s);
-
-  // meta description + title
-  document.title = title + " — Climb Indonesia";
-  const m=document.querySelector('meta[name=description]'); if(m) m.setAttribute('content',`${title} — ${diff} adventure in ${dest}. Book via WhatsApp with Climb Indonesia.`);
+  function miniCard(x){ const title=decode(x.title), dest=(x.destinations||[])[0]||'Indonesia', image=Array.isArray(x.img)?x.img:[x.img,800,500,false], url=image[0]||'', thumb=url; return `<a class="card" href="tour.html?slug=${encodeURIComponent(x.slug)}"><div class="card-img"><span class="card-badge">${x.difficulty||'All levels'}</span><span class="price-badge">${x.price_range||'Price on enquiry'}</span>${url?`<img src="${thumb}" alt="${title}" width="${image[1]||800}" height="${image[2]||500}" loading="lazy" onload="this.classList.add('loaded')" onerror="this.closest('.card-img').classList.add('img-fallback');this.remove()">`:''}</div><div class="card-body"><div class="card-title">${title}</div><div class="card-meta"><span>📍 ${dest}</span><span>⏱ ${x.duration?x.duration+'D':'Varies'}</span></div><span class="card-cta">View tour →</span></div></a>`; }
 })();
 </script>
 </body>

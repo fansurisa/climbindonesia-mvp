@@ -66,6 +66,7 @@
         <label>Level</label>
         <div id="f-lvl" class="grp"></div>
       </div>
+      <select class="search sort" id="sort" aria-label="Sort tours"><option value="name">Sort: Name</option><option value="duration">Sort: Duration</option><option value="difficulty">Sort: Difficulty</option></select>
       <input class="search" id="search" type="search" placeholder="Search tours…" aria-label="Search tours">
     </div>
 
@@ -93,7 +94,7 @@
   const grid = document.getElementById('grid');
   const countEl = document.getElementById('count');
   const emptyEl = document.getElementById('empty');
-  const state = { dest:'', act:'', lvl:'', q:'' };
+  const state = { dest:'', act:'', lvl:'', q:'', sort:'name' };
 
   const decode = s => (s||'').replace(/&#8211;|&ndash;/g,'–').replace(/&amp;/g,'&').replace(/&#8217;|&rsquo;/g,'\'').replace(/&[a-z]+;/g,'');
 
@@ -115,6 +116,7 @@
   lvls.forEach(l=>chip(document.getElementById('f-lvl'),l,l,'lvl'));
 
   document.getElementById('search').addEventListener('input',e=>{ state.q=e.target.value.toLowerCase().trim(); render(); });
+  document.getElementById('sort').addEventListener('change',e=>{ state.sort=e.target.value; render(); });
   document.getElementById('yr').textContent=new Date().getFullYear();
 
   function cardHTML(t){
@@ -122,12 +124,16 @@
     const dest = t.destinations[0] || 'Indonesia';
     const dur  = t.duration ? t.duration+'D' : 'Varies';
     const diff = t.difficulty||'All levels';
-    const img  = t.img
-      ? `<img data-src="${t.img}" alt="${title}" loading="lazy" onload="this.classList.add('loaded')" onerror="this.closest('.card-img').classList.add('img-fallback')">`
+    const image = Array.isArray(t.img) ? t.img : [t.img, 800, 500, false];
+    const imgUrl = image[0];
+    const thumb = imgUrl;
+    const price = t.price_range || 'Price on enquiry';
+    const img  = imgUrl
+      ? `<img data-src="${thumb}" srcset="${thumb} 768w, ${imgUrl} 1400w" sizes="(max-width:680px) 100vw, 33vw" alt="${title}" width="${image[1]||800}" height="${image[2]||500}" loading="lazy" onload="this.classList.add('loaded')" onerror="this.closest('.card-img').classList.add('img-fallback');this.remove()">`
       : '';
     const tags = t.activities.slice(0,3).map(a=>`<span class="tag">${decode(a)}</span>`).join('');
     return `<a class="card" href="tour.html?slug=${encodeURIComponent(t.slug)}">
-      <div class="card-img"><span class="card-badge">${diff}</span>${img}</div>
+      <div class="card-img"><span class="card-badge">${diff}</span><span class="price-badge">${price}</span>${img}</div>
       <div class="card-body">
         <div class="card-title">${title}</div>
         <div class="card-meta">
@@ -151,6 +157,8 @@
       }
       return true;
     });
+    const rank={Easy:1,Moderate:2,Challenging:3,Hard:4};
+    list.sort((a,b)=> state.sort==='duration' ? ((a.duration||99)-(b.duration||99)) : state.sort==='difficulty' ? ((rank[a.difficulty]||9)-(rank[b.difficulty]||9)) : decode(a.title).localeCompare(decode(b.title)));
     grid.innerHTML = list.map(cardHTML).join('');
     countEl.textContent = `Showing ${list.length} of ${T.length} tours`;
     emptyEl.style.display = list.length? 'none':'block';
