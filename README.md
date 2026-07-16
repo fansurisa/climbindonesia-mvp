@@ -28,10 +28,16 @@ Edit `window.SITE_CONFIG.analytics` in `site-config.js`:
 - GA4: set `ga4.enabled = true` + `measurementId`
 
 ## Lighthouse
-GitHub Actions (`.github/workflows/lighthouse.yml`) audits the live site on
-every push + weekly. Run locally:
+GitHub Actions workflow at `.github/workflows/lighthouse.yml` audits the live
+site on every push + weekly. NOTE: committing/pushing a workflow file requires
+a GitHub token with the `workflow` OAuth scope — the deploy token used for
+content pushes may lack it, in which case add the workflow via the GitHub web UI
+(or a token with workflow scope). To run locally:
 ```
 npx lighthouse <url> --only-categories=performance,accessibility,best-practices,seo
 ```
 
+## Known gotcha: deploy token scope
+Pushing `.github/workflows/*` is rejected by GitHub unless the auth token has
+the `workflow` scope. Site content (HTML/JS/assets) pushes fine without it.
 Deployed to GitHub Pages: https://fansurisa.github.io/climbindonesia-mvp/

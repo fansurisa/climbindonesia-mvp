@@ -1,1 +1,4 @@
 .lighthouse/
+
+# Lighthouse CI workflow kept local-only (needs workflow-scope token to push)
+.github/
