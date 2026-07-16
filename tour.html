@@ -9,6 +9,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
+<script src="site-config.js"></script>
+<script src="analytics.js"></script>
 </head>
 <body>
 
@@ -76,7 +78,7 @@
   const image = Array.isArray(t.img) ? t.img : [t.img, 1400, 900, false];
   const imgUrl = image[0] || '';
   const thumb = imgUrl;
-  const pageUrl = `${BASE}tour.html?slug=${encodeURIComponent(t.slug)}`;
+  const pageUrl = `${BASE}tour/${encodeURIComponent(t.slug)}/`;
 
   document.title = title + ' - Climb Indonesia';
   setMeta('name','description',`${title} - ${diff} adventure in ${dest}. ${price}. Book via WhatsApp with Climb Indonesia.`);
@@ -98,7 +100,7 @@
   const sc=document.createElement('script'); sc.type='application/ld+json'; sc.textContent=JSON.stringify(schema); document.head.appendChild(sc);
   }, 120);
 
-  function miniCard(x){ const title=decode(x.title), dest=(x.destinations||[])[0]||'Indonesia', image=Array.isArray(x.img)?x.img:[x.img,800,500,false], url=image[0]||'', thumb=url; return `<a class="card" href="tour.html?slug=${encodeURIComponent(x.slug)}"><div class="card-img"><span class="card-badge">${x.difficulty||'All levels'}</span><span class="price-badge">${x.price_range||'Price on enquiry'}</span>${url?`<img src="${thumb}" alt="${title}" width="${image[1]||800}" height="${image[2]||500}" loading="lazy" onload="this.classList.add('loaded')" onerror="this.closest('.card-img').classList.add('img-fallback');this.remove()">`:''}</div><div class="card-body"><div class="card-title">${title}</div><div class="card-meta"><span>📍 ${dest}</span><span>⏱ ${x.duration?x.duration+'D':'Varies'}</span></div><span class="card-cta">View tour →</span></div></a>`; }
+  function miniCard(x){ const title=decode(x.title), dest=(x.destinations||[])[0]||'Indonesia', image=Array.isArray(x.img)?x.img:[x.img,800,500,false], url=image[0]||'', thumb=url; return `<a class="card" href="tour/${encodeURIComponent(x.slug)}/"><div class="card-img"><span class="card-badge">${x.difficulty||'All levels'}</span><span class="price-badge">${x.price_range||'Price on enquiry'}</span>${url?`<img src="${thumb}" alt="${title}" width="${image[1]||800}" height="${image[2]||500}" loading="lazy" onload="this.classList.add('loaded')" onerror="this.closest('.card-img').classList.add('img-fallback');this.remove()">`:''}</div><div class="card-body"><div class="card-title">${title}</div><div class="card-meta"><span>📍 ${dest}</span><span>⏱ ${x.duration?x.duration+'D':'Varies'}</span></div><span class="card-cta">View tour →</span></div></a>`; }
 })();
 </script>
 </body>

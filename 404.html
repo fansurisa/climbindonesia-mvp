@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Page not found — Climb Indonesia</title>
+<meta name="description" content="The page you're looking for isn't here. Explore Climb Indonesia's adventure tours instead.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script src="site-config.js"></script>
+<script src="analytics.js"></script>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap nav">
+    <a class="brand" href="index.html"><span class="logo">▲</span> Climb Indonesia</a>
+    <nav class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="explorer.html">Explorer</a>
+      <a href="index.html#testimonials">Reviews</a>
+      <a href="index.html#video">Films</a>
+      <a class="btn btn-primary nav-cta" href="https://wa.me/6281219592895">WhatsApp</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap hero-inner" style="text-align:center">
+      <span class="eyebrow" style="color:#7fb6ff">Off the trail</span>
+      <h1>404 — we lost the path.</h1>
+      <p style="margin-left:auto;margin-right:auto">This page doesn't exist (or the tour link is stale). Let's get you back to solid ground.</p>
+      <div class="hero-cta" style="justify-content:center">
+        <a class="btn btn-primary" href="explorer.html">Browse all tours →</a>
+        <a class="btn btn-ghost" href="index.html">Back to home</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap" style="text-align:center">
+      <div class="section-head" style="text-align:center">
+        <span class="eyebrow">Popular right now</span>
+        <h2>Start with a summit</h2>
+      </div>
+      <div class="grid" id="suggest"></div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <div>© <span class="yr"></span> Climb Indonesia — Adventure tours across the archipelago.</div>
+    <div class="social">
+      <a href="https://wa.me/6281219592895">WhatsApp</a>
+      <a href="index.html">Home</a>
+      <a href="explorer.html">Explorer</a>
+    </div>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script>
+document.querySelectorAll('.yr').forEach(e=>e.textContent=new Date().getFullYear());
+(function(){
+  var T = window.CI_TOURS || [];
+  // show 3 suggested tours
+  var picks = T.slice(0,3);
+  var dec = s => (s||'').replace(/&#8211;|&ndash;/g,'–').replace(/&amp;/g,'&').replace(/&#8217;|&rsquo;/g,"'").replace(/&[a-z]+;/g,'');
+  var html = picks.map(function(t){
+    var img = Array.isArray(t.img) ? t.img[0] : t.img;
+    var title = dec(t.title);
+    var dest = t.destinations.join(', ') || 'Indonesia';
+    return '<a class="card" href="tour/'+encodeURIComponent(t.slug)+'/" style="text-decoration:none">'+
+      '<div class="card-img'+(img?'':' img-fallback')+'">'+(img?'<img src="'+img+'" alt="'+title+'" onload="this.classList.add(\'loaded\')" onerror="this.parentNode.classList.add(\'img-fallback\');this.remove()">':'')+'</div>'+
+      '<div class="card-body"><div class="card-title">'+title+'</div>'+
+      '<div class="card-meta"><span>📍 '+dest+'</span></div>'+
+      '<div class="card-cta">View tour →</div></div></a>';
+  }).join('');
+  document.getElementById('suggest').innerHTML = html;
+})();
+</script>
+</body>
+</html>

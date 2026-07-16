@@ -11,6 +11,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
+<script src="site-config.js"></script>
+<script src="analytics.js"></script>
 </head>
 <body>
 
@@ -132,7 +134,7 @@
       ? `<img data-src="${thumb}" srcset="${thumb} 768w, ${imgUrl} 1400w" sizes="(max-width:680px) 100vw, 33vw" alt="${title}" width="${image[1]||800}" height="${image[2]||500}" loading="lazy" onload="this.classList.add('loaded')" onerror="this.closest('.card-img').classList.add('img-fallback');this.remove()">`
       : '';
     const tags = t.activities.slice(0,3).map(a=>`<span class="tag">${decode(a)}</span>`).join('');
-    return `<a class="card" href="tour.html?slug=${encodeURIComponent(t.slug)}">
+    return `<a class="card" href="tour/${encodeURIComponent(t.slug)}/">
       <div class="card-img"><span class="card-badge">${diff}</span><span class="price-badge">${price}</span>${img}</div>
       <div class="card-body">
         <div class="card-title">${title}</div>
